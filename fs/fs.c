@@ -47,10 +47,8 @@ int fullSearch(float *premap, float *crtmap, float *vecy, float *vecx)
               vecx[yy*MB_X_NUM + xx] = m;
               py = n;
               px = m;
-              //fprintf(stderr,"min=%f   \t",min);
-              //fprintf(stderr,"(n,m)=(%d,%d)\n",n,m);
           }
-	} /* </for(SW)>*/
+	}
       /* ブロックマッチング回数の平均計算*/
       if(bmc_ave != 0) 
         bmc_ave = (bmc_ave + bmcount)/2;

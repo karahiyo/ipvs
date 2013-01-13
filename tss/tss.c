@@ -31,16 +31,13 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
       int vec_v_counter = 1; // 動きベクトルを更新するタイミングを制御するためのカウンタ
       
       while(steps < 4) {
-          //fprintf(stderr,"[STEP %d]\n",steps);
           /* 探索するブロックは (n*sThin, m*sThin) となる */
-          //fprintf(stderr,"now_y,x=%d,%d\n",now_y,now_x);
           for (n = -1; n <= 1; n++) 
             for (m = -1; m <= 1; m++) {
                 /* 動きベクトルの更新 */
                 if ( steps > vec_v_counter) {
                     vecy[yy*MB_X_NUM + xx] += now_y;
                     vecx[yy*MB_X_NUM + xx] += now_x;
-                    //fprintf(stderr,"vecy=%d,vecx=%d\n",vecy[yy*MB_X_NUM + xx],vecx[yy*MB_X_NUM + xx]);
                     vec_v_counter++;
                 }   
                 /* 画像端部の例外処理 */
@@ -54,31 +51,26 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
                 bmcount++; //ブロックマッチング回数カウント
                 for (j = 0; j < MB_SIZE; j++)
                   for (i = 0; i < MB_SIZE; i++) {
-                      //fprintf(stderr,"n,sThin=%d,%d",n,sThin);
                       sum += fabs(crtmap[(y + j)*SRC_X_SIZE + (x + i)] -
 			            premap[(y + n*sThin + j)*SRC_X_SIZE + (x + m*sThin + i)]);
                 }
 
 	            /* 動きベクトルの更新 */
                 if (sum < min) {
-                    //fprintf(stderr,"sum=%f < min=%f\n",sum,min);
                     min = sum;
                     now_y = n*sThin;
                     now_x = m*sThin;
-                    //fprintf(stderr,"min=%f   \t",min);
-                    //fprintf(stderr,"(n,m,sthin)=(%d,%d,%d)\n",n,m,sThin);
                 }
-            } /* </for(SW)> */
+            } /* }}} for(n)*for(m) */
           
           /* ブロックマッチング回数の平均計算*/
           if(bmc_ave != 0) 
-              bmc_ave = (bmc_ave + bmcount)/2;
+              bmc_ave = (bmc_ave + bmcount) / 2;
           else
               bmc_ave = bmcount;
-          
           steps++;
           sThin /= 2; // 次の探索の間引き幅は、現在のものを "/2" したものとなる
-      } /* </while>*/
+      } /* }}} while(step < 4) */
     }
   fprintf(stderr,"min=%f \n",min);
   return 0;

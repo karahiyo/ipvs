@@ -28,7 +28,7 @@ int greedySearch(float *premap, float *crtmap, float *vecy, float *vecx)
         int now_x,now_y; // 各ステップごとの開始点を記憶
         now_x = 0, now_y = 0; // 探索開始点(0,0)
         int yet[MB_SIZE][MB_SIZE]; // 探索空間のサイズの配列要素を持ち、既に探索を行った点を保持する
-        int isGreed = 1;
+        int isGreed = 1; // 満足ならゼロ
 
         /* ゼロ(=未探索)で初期化 */
         for(n = -SW_SIZE; n <= SW_SIZE; n++)
@@ -37,8 +37,6 @@ int greedySearch(float *premap, float *crtmap, float *vecy, float *vecx)
           }
       
         while(isGreed) {
-          //fprintf(stderr,"(y,x)=(%d,%d) ",now_y,now_x);
-            
             /* 探索開始点のまわりを探索 */
             for (n = -1; n <= 1; n++) 
               for (m = -1; m <= 1; m++) {
@@ -75,10 +73,8 @@ int greedySearch(float *premap, float *crtmap, float *vecy, float *vecx)
                     min = sum;
                     now_y = now_y + n;
                     now_x = now_x + m;
-                    //fprintf(stderr,"min=%f   \t",min);
-                    //fprintf(stderr,"(n,m)=(%d,%d)",n,m);
                 }  
-            } /* </for(SW)> */
+            } /* }}} for(n)*for(m) */
          
           /* ブロックマッチング回数の平均計算*/
           if(bmc_ave != 0) 
@@ -86,15 +82,11 @@ int greedySearch(float *premap, float *crtmap, float *vecy, float *vecx)
           else
               bmc_ave = bmcount;
  
-          //fprintf(stderr,"round_min,min=%f,%f\n",round_min,min);
-          if( round_min < min) {
+          if( round_min < min)
             round_min = min;
-            //fprintf(stderr,"round_min=%f",round_min);
-          } else {
-            //fprintf(stderr,"(y,x) = (%d,%d)\n",now_y,now_x);
+          else 
             isGreed = 0;
-          }
-      } /* </while> */
+      } /* }}} while(isGreedy) */
     }
   
   fprintf(stderr,"min=%f \n",min);
