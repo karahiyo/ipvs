@@ -117,6 +117,6 @@ int main(int argc, char *argv[])
   system("date");
   end = clock();
 
-  fprintf(stderr, "TIME=%d[ms] ,#matching=%d\n",end-start,bmc_ave);
+  fprintf(stderr, "TIME=%d[ms] ,#matching=%d\n",end-start,bmcount);
   return 0;
 }
