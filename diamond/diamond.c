@@ -115,13 +115,14 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
     } /* }}} while(ldspGreed) */
     
   
+  int tmp_vecy=0,tmp_vecx=0;
   /* SDSP探索 */
-  for(n=0;n<6;n++) {
+  for(n=0; n<6; n++) {
     /* 画像端部の例外処理 */
-    if((y + now_y + ldsp[n].y < 0) || 
-        (x + now_x + ldsp[n].x < 0) ||
-        (SRC_Y_SIZE < y + now_y + ldsp[n].y + MB_SIZE) ||
-        (SRC_X_SIZE < x + now_x + ldsp[n].x + MB_SIZE)) continue;
+    if((y + now_y + sdsp[n].y < 0) || 
+        (x + now_x + sdsp[n].x < 0) ||
+        (SRC_Y_SIZE < y + now_y + sdsp[n].y + MB_SIZE) ||
+        (SRC_X_SIZE < x + now_x + sdsp[n].x + MB_SIZE)) continue;
 
     if((now_y + sdsp[n].y < -7) ||
         (now_x + sdsp[n].x < -7) ||
@@ -140,14 +141,14 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
     /* 一試行の最小値(round_min)と動きベクトルの更新 */
     if (sum < min) {
         min = sum;
-        vecy[yy*MB_X_NUM + xx] += sdsp[n].y;
-        vecx[yy*MB_X_NUM + xx] += sdsp[n].x;
+        tmp_vecy = sdsp[n].y;
+        tmp_vecx = sdsp[n].x;
     }
   } /* }}} for(sdsp) */
 
     /* 探索開始点の移動 */
-    now_y = vecy[yy*MB_X_NUM + xx];
-    now_x = vecx[yy*MB_X_NUM + xx];
+    vecy[yy*MB_X_NUM + xx] += tmp_vecy;
+    vecx[yy*MB_X_NUM + xx] += tmp_vecx;
 
   } /* }}} for(SRC_Y_SIZE)*for(SRC_X_SIZE) */
   fprintf(stderr,"min=%f \n",min);
@@ -200,7 +201,9 @@ double getPsnrFloat(float *srcmap, float *decmap)
   for (i = 0; i < SRC_Y_SIZE*SRC_X_SIZE; i++)
       rms += (decmap[i] - srcmap[i])*(decmap[i] - srcmap[i]);
   rms /= SRC_Y_SIZE*SRC_X_SIZE;
+  fprintf(stderr,"(1)rms=%f\n",rms); 
   rms = sqrt(rms);
+  fprintf(stderr,"(2)rms=%f\n",rms);
   if (rms == 0.) {
     fprintf(stderr, "PSNR can't calclate...\n");
     exit(1);
