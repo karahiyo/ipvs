@@ -5,8 +5,6 @@ int bmc_ave;
 extern int bmcount;
 extern int bmc_ave;
 
-int px, py;
-
 /*===============================================================
   routine    : FullSearch
   return val : int
@@ -45,15 +43,10 @@ int fullSearch(float *premap, float *crtmap, float *vecy, float *vecx)
               min = sum;
               vecy[yy*MB_X_NUM + xx] = n;
               vecx[yy*MB_X_NUM + xx] = m;
-              py = n;
-              px = m;
           }
 	}
-      /* ブロックマッチング回数の平均計算*/
-      if(bmc_ave != 0) 
-        bmc_ave = (bmc_ave + bmcount)/2;
-      else
-        bmc_ave = bmcount; 
+                  fprintf(stderr,"vec(y,x)=(%d,%d)",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
+
     }
   }
         

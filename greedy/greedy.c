@@ -63,7 +63,7 @@ int greedySearch(float *premap, float *crtmap, float *vecy, float *vecx)
                 /* 探索済ならマッチングしない */
                 if (yet[now_y + n + SW_SIZE][now_x + m + SW_SIZE] == 1) 
                     continue;
-                else
+                els
                     yet[now_y + n + SW_SIZE][now_x + m + SW_SIZE] = 1;
                     
                 /* 誤差の計算 */

@@ -19,19 +19,23 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
   double sum, min;
   register int i, j, m, n, x, y, xx, yy;
 
+  /* 探索範囲 */
   for (y = 0, yy = 0; y < SRC_Y_SIZE; y += MB_SIZE, yy++)
     for (x = 0, xx = 0; x < SRC_X_SIZE; x += MB_SIZE, xx++) {
-      /* 探索範囲 */
-      min = DBL_MAX;
 
-      int sThin = 4; // TSSの各探索ステップごとの探索ブロックの間引く間隔
-      int steps = 1; // ステップ数のカウンタ
-      int now_x,now_y; // 各ステップごとの開始点を記憶
-      now_x = 0, now_y = 0; // ともに0で初期化
-      int vec_v_counter = 1; // 動きベクトルを更新するタイミングを制御するためのカウンタ
+      int sThin; // TSSの各探索ステップごとの探索ブロック間の幅
+      int steps; // ステップ数のカウンタ
+      int now_x, now_y; // 各ステップごとの開始点を記憶
+      int vec_v_counter; // 動きベクトルを更新するタイミングを制御するためのカウンタ
       
+      min = DBL_MAX;
+      sThin = 4;
+      steps = 1;
+      now_x = 0, now_y = 0; // 探索のスタート点。なんでもいい。
+      vec_v_counter = 1;
+
       while(steps < 4) {
-          /* 探索するブロックは (n*sThin, m*sThin) となる */
+          /* 探索するブロックのポジションは (n*sThin, m*sThin) */
           for (n = -1; n <= 1; n++) 
             for (m = -1; m <= 1; m++) {
                 /* 動きベクトルの更新 */
@@ -63,11 +67,6 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
                 }
             } /* }}} for(n)*for(m) */
           
-          /* ブロックマッチング回数の平均計算*/
-          if(bmc_ave != 0) 
-              bmc_ave = (bmc_ave + bmcount) / 2;
-          else
-              bmc_ave = bmcount;
           steps++;
           sThin /= 2; // 次の探索の間引き幅は、現在のものを "/2" したものとなる
       } /* }}} while(step < 4) */

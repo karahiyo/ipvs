@@ -101,8 +101,8 @@ int main(int argc, char *argv[])
     fprintf(stderr, "now loading frame data from \"%s\"...\n", filename);
     /* 次フレームの読み込み */
     loadRawFloat(filename, crtmap);
-    /* Three Step Search */
-    threeStepSearch(premap, crtmap, vecy, vecx);
+    /* Diamond Search */
+    diamondSearch(premap, crtmap, vecy, vecx);
     /* 予測画像の作成 */
     makePrediction(premap, mcmap, vecy, vecx);
     /* PSNR の算出 */
