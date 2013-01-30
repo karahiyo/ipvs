@@ -24,11 +24,11 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
       int y;
   };
 
-  /* LDSP */
+  /* LHSP */
   struct _hexagon_struc lhsp[7] = 
             {{0,0},{-2,0},{-1,2},{1,2},{2,0},{1,-2},{-1,-2}};
 
-  /* SDSP */
+  /* SHSP */
   struct _hexagon_struc shsp[5] =
             {{0,0},{-1,0},{0,1},{1,0},{0,-1}};
 
@@ -36,12 +36,14 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
   for (y = 0, yy = 0; y < SRC_Y_SIZE; y += MB_SIZE, yy++)
     for (x = 0, xx = 0; x < SRC_X_SIZE; x += MB_SIZE, xx++) {
 
+        fprintf(stderr,"(y,x)=(%d,%d)\n",y,x);
+
       static int now_x, now_y; // 各ステップごとの開始点を記憶
       double round_min; // hexagon-basedサーチの一回の試行の中での最小値の値
       int yet[MB_SIZE][MB_SIZE]; // マクロブロックサイズの配列。各画素位置が探索済かどうかを保持
       int lhspGreed; // lhsp探索終了マーク
       int shspGreed; // shsp探索終了マーク
-      int tmp_vecy=0,tmp_vecx=0;
+      int tmp_vecy,tmp_vecx;
       
       min = DBL_MAX;
       round_min = DBL_MAX;
@@ -59,7 +61,8 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
       while(lhspGreed != 0) {
           round_min = min;
           isblind = 0;
-          fprintf(stderr,"NOW(%d,%d) -> ",now_y,now_x);
+          tmp_vecy = 0, tmp_vecx = 0;
+          fprintf(stderr,"(%d,%d) -> ",now_y,now_x);
 
           /* LHSP探索 */
           for (n = 0; n < 7; n++) {
@@ -73,7 +76,7 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
                     (now_x + lhsp[n].x < -7) ||
                     (now_y + lhsp[n].y > 7) ||
                     (now_x + lhsp[n].x > 7)) { 
-                    fprintf(stderr,"\n\t ** out => %d(%d,%d)\n",n,now_y+lhsp[n].y,now_x+lhsp[n].x);
+                    fprintf(stderr,"\t ** out => %d(%d,%d)\n",n,now_y+lhsp[n].y,now_x+lhsp[n].x);
                     continue;
                 }
 
@@ -103,13 +106,15 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 
            /* 探索開始点の移動 */
            if(isblind == 1) {
+               fprintf(stderr,"b(%d,%d) -> ",now_y,now_x);
                 now_y += tmp_vecy;
                 now_x += tmp_vecx;
+                fprintf(stderr,"a(%d,%d)\n",now_y,now_x);
            } else {
                 vecy[yy*MB_X_NUM + xx] = now_y;
                 vecx[yy*MB_X_NUM + xx] = now_x;
                 lhspGreed = 0;
-                fprintf(stderr,"::vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
+                fprintf(stderr,"[blind]::> vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
            }
 
 //            fprintf(stderr,"::vec(y,x)=(%d,%d) \n",vecy[yy*MB_X_NUM+xx],vecx[yy*MB_X_NUM+xx]);
@@ -122,16 +127,18 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
                 vecy[yy*MB_X_NUM + xx] = now_y;
                 vecx[yy*MB_X_NUM + xx] = now_x;
                 lhspGreed = 0;
-            fprintf(stderr,"::vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
+                fprintf(stderr,"[min]::> vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
             }
     } /* }}} while(lhspGreed) */
     
   
   /* SHSP探索 */
   tmp_vecy=0,tmp_vecx=0;
-  fprintf(stderr,"\tSHSP(%d,%d) -> ",(int)vecy[yy*MB_X_NUM + xx],(int)vecx[yy*MB_X_NUM + xx]);
+  isblind = 0;
+
+  //fprintf(stderr,"\tSHSP(%d,%d) -> ",(int)vecy[yy*MB_X_NUM + xx],(int)vecx[yy*MB_X_NUM + xx]);
   for(n=0; n<5; n++) {
-    isblind = 0; // 行き止まりフラグ OFF
+    //isblind = 0; // 行き止まりフラグ OFF
     /* 画像端部の例外処理 */
     if((y + now_y + shsp[n].y < 0) || 
         (x + now_x + shsp[n].x < 0) ||
@@ -142,7 +149,7 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
         (now_x + shsp[n].x < -7) ||
         (now_y + shsp[n].y > 7) ||
         (now_x + shsp[n].x > 7)) { 
-        fprintf(stderr,"\n\t\t ** out => %d(%d,%d)\n",n,now_y+shsp[n].y,now_x+shsp[n].x);
+        fprintf(stderr,"\t\t ** out => %d(%d,%d)\n",n,now_y+shsp[n].y,now_x+shsp[n].x);
         continue;
     }
 
@@ -169,7 +176,7 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
         vecy[yy*MB_X_NUM + xx] += tmp_vecy;
         vecx[yy*MB_X_NUM + xx] += tmp_vecx;
     }
-    fprintf(stderr,"\t::vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
+    fprintf(stderr,"::::::::::vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
     
 
   } /* }}} for(SRC_Y_SIZE)*for(SRC_X_SIZE) */
@@ -223,9 +230,9 @@ double getPsnrFloat(float *srcmap, float *decmap)
   for (i = 0; i < SRC_Y_SIZE*SRC_X_SIZE; i++)
       rms += (decmap[i] - srcmap[i])*(decmap[i] - srcmap[i]);
   rms /= SRC_Y_SIZE*SRC_X_SIZE;
-  fprintf(stderr,"(1)rms=%f\n",rms); 
+  //fprintf(stderr,"(1)rms=%f\n",rms); 
   rms = sqrt(rms);
-  fprintf(stderr,"(2)rms=%f\n",rms);
+  //fprintf(stderr,"(2)rms=%f\n",rms);
   if (rms == 0.) {
     fprintf(stderr, "PSNR can't calclate...\n");
     exit(1);
