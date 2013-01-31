@@ -1,10 +1,5 @@
 #include "includes.h"
 
-int bmcount; // ブロックのマッチング回数を数える
-int bmc_ave; // ブロックのマッチング回数の平均値
-extern int bmcount;
-extern int bmc_ave;
-
 /*===============================================================
   routine    : threeStepSearch
   return val : int
@@ -19,6 +14,8 @@ int greedySearch(float *premap, float *crtmap, float *vecy, float *vecx)
   double sum, min;
   register int i, j, m, n, x, y, xx, yy;
   double round_min; // greedyサーチの一回の試行の中での最小値の値
+  int bmcount = 0;
+  int b_num = MB_X_NUM * MB_Y_NUM;
 
   /* 探索範囲 */
   for (y = 0, yy = 0; y < SRC_Y_SIZE; y += MB_SIZE, yy++)
@@ -63,7 +60,7 @@ int greedySearch(float *premap, float *crtmap, float *vecy, float *vecx)
                 /* 探索済ならマッチングしない */
                 if (yet[now_y + n + SW_SIZE][now_x + m + SW_SIZE] == 1) 
                     continue;
-                els
+                else
                     yet[now_y + n + SW_SIZE][now_x + m + SW_SIZE] = 1;
                     
                 /* 誤差の計算 */
@@ -119,6 +116,7 @@ int greedySearch(float *premap, float *crtmap, float *vecy, float *vecx)
     }
   
   fprintf(stderr,"min=%f \n",min);
+  fprintf(stderr,"bmcount=%d \n",bmcount / b_num);
   return 0;
 }
 

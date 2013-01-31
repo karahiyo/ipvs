@@ -1,10 +1,5 @@
 #include "includes.h"
 
-int bmcount;
-int bmc_ave;
-extern int bmcount;
-extern int bmc_ave;
-
 /*===============================================================
   routine    : threeStepSearch
   return val : int
@@ -18,6 +13,8 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 {
   double sum, min;
   register int i, j, m, n, x, y, xx, yy;
+  int bmcount=0;
+  int b_num = MB_X_NUM * MB_Y_NUM;
 
   /* 探索範囲 */
   for (y = 0, yy = 0; y < SRC_Y_SIZE; y += MB_SIZE, yy++)
@@ -34,7 +31,7 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
       now_x = 0, now_y = 0; // 探索のスタート点。なんでもいい。
       vec_v_counter = 1;
 
-      while(steps < 4) {
+      while(steps <= 3) {
           /* 探索するブロックのポジションは (n*sThin, m*sThin) */
           for (n = -1; n <= 1; n++) 
             for (m = -1; m <= 1; m++) {
@@ -45,10 +42,10 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
                     vec_v_counter++;
                 }   
                 /* 画像端部の例外処理 */
-                if((yy + n*sThin + vecy[yy*MB_X_NUM + xx] < 0) || 
-                    (xx + m*sThin + vecx[yy*MB_X_NUM + xx] < 0) ||
-                    (MB_Y_NUM < yy + n*sThin + vecy[yy*MB_X_NUM + xx] + 1) ||
-                    (MB_X_NUM < xx + m*sThin + vecx[yy*MB_X_NUM + xx] + 1)) continue;
+                if((y + n*sThin + vecy[yy*MB_X_NUM + xx] < 0) || 
+                    (x + m*sThin + vecx[yy*MB_X_NUM + xx] < 0) ||
+                    (SRC_Y_SIZE < y + n*sThin + (int)vecy[yy*MB_X_NUM + xx] + MB_SIZE) ||
+                    (SRC_X_SIZE < x + m*sThin + (int)vecx[yy*MB_X_NUM + xx] + MB_SIZE)) continue;
 
                 /* 誤差の計算 */
 	            sum = 0.0;
@@ -56,7 +53,7 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
                 for (j = 0; j < MB_SIZE; j++)
                   for (i = 0; i < MB_SIZE; i++) {
                       sum += fabs(crtmap[(y + j)*SRC_X_SIZE + (x + i)] -
-			            premap[(y + n*sThin + j)*SRC_X_SIZE + (x + m*sThin + i)]);
+			            premap[(y + n*sThin + (int)vecy[yy*MB_X_NUM+xx]+ j)*SRC_X_SIZE + (x + m*sThin + (int)vecx[yy*MB_X_NUM + xx] + i)]);
                 }
 
 	            /* 動きベクトルの更新 */
@@ -72,6 +69,7 @@ int threeStepSearch(float *premap, float *crtmap, float *vecy, float *vecx)
       } /* }}} while(step < 4) */
     }
   fprintf(stderr,"min=%f \n",min);
+  fprintf(stderr,"bmcount=%d \n", bmcount/b_num);
   return 0;
 }
 

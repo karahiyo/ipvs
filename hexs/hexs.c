@@ -1,10 +1,5 @@
 #include "includes.h"
 
-int bmcount;
-int bmc_ave;
-extern int bmcount;
-extern int bmc_ave;
-    
 /*===============================================================
   routine    : threeStepSearch
   return val : int
@@ -18,6 +13,8 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 {
   double sum, min;
   register int i, j, m, n, x, y, xx, yy;
+  int bmcount = 0;
+  int b_num = MB_X_NUM * MB_Y_NUM;
 
   struct _hexagon_struc {
       int x;
@@ -36,7 +33,7 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
   for (y = 0, yy = 0; y < SRC_Y_SIZE; y += MB_SIZE, yy++)
     for (x = 0, xx = 0; x < SRC_X_SIZE; x += MB_SIZE, xx++) {
 
-        fprintf(stderr,"(y,x)=(%d,%d)\n",y,x);
+        //fprintf(stderr,"(y,x)=(%d,%d)\n",y,x);
 
       static int now_x, now_y; // 各ステップごとの開始点を記憶
       double round_min; // hexagon-basedサーチの一回の試行の中での最小値の値
@@ -62,7 +59,7 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
           round_min = min;
           isblind = 0;
           tmp_vecy = 0, tmp_vecx = 0;
-          fprintf(stderr,"(%d,%d) -> ",now_y,now_x);
+          //fprintf(stderr,"(%d,%d) -> ",now_y,now_x);
 
           /* LHSP探索 */
           for (n = 0; n < 7; n++) {
@@ -76,7 +73,7 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
                     (now_x + lhsp[n].x < -7) ||
                     (now_y + lhsp[n].y > 7) ||
                     (now_x + lhsp[n].x > 7)) { 
-                    fprintf(stderr,"\t ** out => %d(%d,%d)\n",n,now_y+lhsp[n].y,now_x+lhsp[n].x);
+                    //fprintf(stderr,"\t ** out => %d(%d,%d)\n",n,now_y+lhsp[n].y,now_x+lhsp[n].x);
                     continue;
                 }
 
@@ -106,18 +103,17 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 
            /* 探索開始点の移動 */
            if(isblind == 1) {
-               fprintf(stderr,"b(%d,%d) -> ",now_y,now_x);
+               //fprintf(stderr,"b(%d,%d) -> ",now_y,now_x);
                 now_y += tmp_vecy;
                 now_x += tmp_vecx;
-                fprintf(stderr,"a(%d,%d)\n",now_y,now_x);
+                //fprintf(stderr,"a(%d,%d)\n",now_y,now_x);
            } else {
                 vecy[yy*MB_X_NUM + xx] = now_y;
                 vecx[yy*MB_X_NUM + xx] = now_x;
                 lhspGreed = 0;
-                fprintf(stderr,"[blind]::> vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
+                //fprintf(stderr,"[blind]::> vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
            }
 
-//            fprintf(stderr,"::vec(y,x)=(%d,%d) \n",vecy[yy*MB_X_NUM+xx],vecx[yy*MB_X_NUM+xx]);
 
 
             /* 終了条件の判定 */
@@ -127,7 +123,7 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
                 vecy[yy*MB_X_NUM + xx] = now_y;
                 vecx[yy*MB_X_NUM + xx] = now_x;
                 lhspGreed = 0;
-                fprintf(stderr,"[min]::> vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
+                //fprintf(stderr,"[min]::> vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
             }
     } /* }}} while(lhspGreed) */
     
@@ -136,7 +132,6 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
   tmp_vecy=0,tmp_vecx=0;
   isblind = 0;
 
-  //fprintf(stderr,"\tSHSP(%d,%d) -> ",(int)vecy[yy*MB_X_NUM + xx],(int)vecx[yy*MB_X_NUM + xx]);
   for(n=0; n<5; n++) {
     //isblind = 0; // 行き止まりフラグ OFF
     /* 画像端部の例外処理 */
@@ -149,7 +144,7 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
         (now_x + shsp[n].x < -7) ||
         (now_y + shsp[n].y > 7) ||
         (now_x + shsp[n].x > 7)) { 
-        fprintf(stderr,"\t\t ** out => %d(%d,%d)\n",n,now_y+shsp[n].y,now_x+shsp[n].x);
+        //fprintf(stderr,"\t\t ** out => %d(%d,%d)\n",n,now_y+shsp[n].y,now_x+shsp[n].x);
         continue;
     }
 
@@ -176,11 +171,12 @@ int hexagonSearch(float *premap, float *crtmap, float *vecy, float *vecx)
         vecy[yy*MB_X_NUM + xx] += tmp_vecy;
         vecx[yy*MB_X_NUM + xx] += tmp_vecx;
     }
-    fprintf(stderr,"::::::::::vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
+    //fprintf(stderr,"::::::::::vec(y,x)=(%d,%d)\n",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
     
 
   } /* }}} for(SRC_Y_SIZE)*for(SRC_X_SIZE) */
-  fprintf(stderr,"\n********************************* \nmin=%f \n",min);
+  fprintf(stderr, "min=%f \n",min);
+  fprintf(stderr, "bm_avg = %d\n", bmcount / b_num);
   return 0;
 }
 

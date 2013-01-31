@@ -8,11 +8,6 @@ static float mcmap[SRC_Y_SIZE*SRC_X_SIZE];
 static float vecx[MB_Y_NUM*MB_X_NUM];    /* motion vector (horizontal) */
 static float vecy[MB_Y_NUM*MB_X_NUM];    /* motion vector (vertical)   */
 
-int bmcount;
-int bmc_ave;
-extern int bmcount;
-extern int bmc_ave;
-
 /*===============================================================
   routine    : main
   return val : int
@@ -38,8 +33,6 @@ int main(int argc, char *argv[])
   headframe = HEAD_FRAME;
   tailframe = TAIL_FRAME;
   skipframe = SKIP_FRAME;
-  bmcount = 0;
-  bmc_ave = 0;
 
   /* パラメータの設定 */
   if (argc < 1) {
@@ -117,6 +110,6 @@ int main(int argc, char *argv[])
   system("date");
   end = clock();
 
-  fprintf(stderr, "TIME=%d[ms] ,#matching=%d\n",(int)(end-start),bmcount);
+  fprintf(stderr, "TIME=%d[ms]\n",(int)(end-start));
   return 0;
 }

@@ -1,10 +1,5 @@
 #include "includes.h"
 
-int bmcount;
-int bmc_ave;
-extern int bmcount;
-extern int bmc_ave;
-    
 /*===============================================================
   routine    : threeStepSearch
   return val : int
@@ -18,6 +13,8 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 {
   double sum, min;
   register int i, j, m, n, x, y, xx, yy;
+  int bmcount=0;
+  int b_num = MB_X_NUM * MB_Y_NUM;
 
   struct _diamond_struc {
       int y;
@@ -41,11 +38,13 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
       int yet[MB_SIZE][MB_SIZE]; // マクロブロックサイズの配列。各画素位置が探索済かどうかを保持
       int ldspGreed; // ldsp探索終了マーク
       int sdspGreed; // sdsp探索終了マーク
-          
+      int tmp_vecy, tmp_vecx;
+    
       min = DBL_MAX;
+      round_min = DBL_MAX;
       now_x = 0, now_y = 0; // 探索開始点(0,0)
       ldspGreed = 1;
-      int isblind = 0; // 探索空間が行き止まりかフラグ。0なら行き止まり
+      int isblind; // 探索空間が行き止まりかフラグ。0なら行き止まり
 
       /* マクロブロックサイズの配列をゼロ(=未探索)で初期化 */
       for(n = -SW_SIZE; n <= SW_SIZE; n++)
@@ -55,8 +54,10 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 
       
       while(ldspGreed != 0) {          
-          round_min = DBL_MAX;
-          
+          round_min = min;
+          isblind = 0;
+          tmp_vecy = 0, tmp_vecx = 0;
+
           /* LDSP探索 */
           for (n = 0; n < 9; n++) {
               /* 画像端部の例外処理 */
@@ -89,15 +90,15 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 	            /* 一試行の最小値(round_min)と動きベクトルの更新 */
                 if (sum < round_min) {
                     round_min = sum;
-                    vecy[yy*MB_X_NUM + xx] = ldsp[n].y;
-                    vecx[yy*MB_X_NUM + xx] = ldsp[n].x;
+                    tmp_vecy = ldsp[n].y;
+                    tmp_vecx = ldsp[n].x;
                 }
             } /* }}} for(n)*for(m) */
 
            /* 探索開始点の移動 */
            if(isblind == 1) {
-                now_y += vecy[yy*MB_X_NUM + xx];
-                now_x += vecx[yy*MB_X_NUM + xx];
+                now_y += tmp_vecy;
+                now_x += tmp_vecx;
            } else {
                 vecy[yy*MB_X_NUM + xx] = now_y;
                 vecx[yy*MB_X_NUM + xx] = now_x;
@@ -114,9 +115,10 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
             }
     } /* }}} while(ldspGreed) */
     
-  
-  int tmp_vecy=0,tmp_vecx=0;
   /* SDSP探索 */
+  tmp_vecy = 0, tmp_vecx = 0;
+  isblind = 0;
+
   for(n=0; n<5; n++) {
     /* 画像端部の例外処理 */
     if((y + now_y + sdsp[n].y < 0) || 
@@ -132,6 +134,7 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
     /* 誤差の計算 */
     sum = 0.0;
     bmcount++; //ブロックマッチング回数カウント
+    isblind = 1; 
     for (j = 0; j < MB_SIZE; j++)
         for (i = 0; i < MB_SIZE; i++) {
             sum += fabs(crtmap[(y + j)*SRC_X_SIZE + (x + i)] -
@@ -147,11 +150,14 @@ int diamondSearch(float *premap, float *crtmap, float *vecy, float *vecx)
   } /* }}} for(sdsp) */
 
     /* 探索開始点の移動 */
-    vecy[yy*MB_X_NUM + xx] += tmp_vecy;
-    vecx[yy*MB_X_NUM + xx] += tmp_vecx;
+    if(isblind == 1) {
+        vecy[yy*MB_X_NUM + xx] += tmp_vecy;
+        vecx[yy*MB_X_NUM + xx] += tmp_vecx;
+    }
 
   } /* }}} for(SRC_Y_SIZE)*for(SRC_X_SIZE) */
-  fprintf(stderr,"min=%f \n",min);
+  fprintf(stderr, "min=%f \n",min);
+  fprintf(stderr, "bm_avg=%d\n", bmcount / b_num);
   return 0;
 }
 
@@ -201,9 +207,7 @@ double getPsnrFloat(float *srcmap, float *decmap)
   for (i = 0; i < SRC_Y_SIZE*SRC_X_SIZE; i++)
       rms += (decmap[i] - srcmap[i])*(decmap[i] - srcmap[i]);
   rms /= SRC_Y_SIZE*SRC_X_SIZE;
-  fprintf(stderr,"(1)rms=%f\n",rms); 
   rms = sqrt(rms);
-  fprintf(stderr,"(2)rms=%f\n",rms);
   if (rms == 0.) {
     fprintf(stderr, "PSNR can't calclate...\n");
     exit(1);

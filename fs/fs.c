@@ -1,10 +1,5 @@
 #include "includes.h"
 
-int bmcount;
-int bmc_ave;
-extern int bmcount;
-extern int bmc_ave;
-
 /*===============================================================
   routine    : FullSearch
   return val : int
@@ -18,9 +13,12 @@ int fullSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 {
   double sum, min;
   register int i, j, m, n, x, y, xx, yy;
+  int bmcount = 0; //ブロックマッチング回数をカウント
+  int b_num = MB_X_NUM*MB_Y_NUM;
 
   for (y = 0, yy = 0; y < SRC_Y_SIZE; y += MB_SIZE, yy++) {
     for (x = 0, xx = 0; x < SRC_X_SIZE; x += MB_SIZE, xx++) {
+
       /* 探索範囲 */
       min = DBL_MAX;
       for (n = -SW_SIZE; n <= SW_SIZE; n++) 
@@ -32,12 +30,14 @@ int fullSearch(float *premap, float *crtmap, float *vecy, float *vecx)
 
 	  /* 誤差の計算 */
 	  sum = 0.0;
-      bmcount++; /* ブロックマッチング回数のカウント*/
+      bmcount++;
         for (j = 0; j < MB_SIZE; j++)
           for (i = 0; i < MB_SIZE; i++) {
 	        sum += fabs(crtmap[(y + j)*SRC_X_SIZE + (x + i)] -
 			  premap[(y + n + j)*SRC_X_SIZE + (x + m + i)]);
+            //bmcount++; /* ブロックマッチング回数のカウント*/
 	    }
+
 	  /* 動きベクトルの更新 */
           if (sum < min) {
               min = sum;
@@ -45,12 +45,11 @@ int fullSearch(float *premap, float *crtmap, float *vecy, float *vecx)
               vecx[yy*MB_X_NUM + xx] = m;
           }
 	}
-                  fprintf(stderr,"vec(y,x)=(%d,%d)",(int)vecy[yy*MB_X_NUM+xx],(int)vecx[yy*MB_X_NUM+xx]);
-
     }
   }
         
   fprintf(stderr,"min=%f \n",min);
+  fprintf(stderr,"bm_avg=%d \n",bmcount/b_num);
   
   return 0;
 }
